@@ -1,6 +1,6 @@
-# Mibo - Frontend
+# PlayPal - Frontend
 
-Webapp de transporte creado con React y Typescript
+Aplicación para clubs creada con React y Typescript
 
 ## Herramientas principales
 
@@ -24,6 +24,6 @@ Webapp de transporte creado con React y Typescript
 
 ### Para generar código de backend
 
-Se necesita el servidor ejecutandose en localhost:5000 para conseguir las especificaciones de la API y que openapi-typescript-codegen pueda generar el código
+Se necesita el servidor ejecutandose en localhost:3000 para conseguir las especificaciones de la API y que openapi-typescript-codegen pueda generar el código
 
 - npm run generate:backend
