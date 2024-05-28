@@ -10,19 +10,13 @@ const manifestForPlugIn: Partial<VitePWAOptions> = {
   registerType: "prompt",
   includeAssets: ["favicon.ico", "apple-touch-icon.png"],
   manifest: {
-    name: "Influnet",
-    short_name: "Influnet",
-    description: "Red social",
+    name: "PlayPal",
+    short_name: "PlayPal",
+    description: "Club de Santa Cruz",
     icons: [
       {
         src: "/pwa-192x192.png",
         sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/pwa-512x512.png",
-        sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
