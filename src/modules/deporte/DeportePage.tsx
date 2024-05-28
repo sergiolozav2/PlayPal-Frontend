@@ -3,12 +3,15 @@ import { ModuleTitle } from "../core/components/ModulesLayout";
 import React, { useState } from "react";
 import { FaChevronLeft } from "react-icons/fa6";
 import { toast } from "react-toastify";
+import { AuthService } from "@/backend";
+import { LoadingWrapper } from "../core/components/LoadingSpinner";
+import { useAuthStore } from "../core/store/useAuthStore";
 
 type DeportePageProps = {
   image: string;
   name: string;
   canchas: { name: string; image: string }[];
-  horarios: { hora: string; duracion: string; dia: string }[];
+  horarios: { hora: string; duracion: string; dia: string; fecha: string }[];
 };
 
 export function DeportePage(props: DeportePageProps) {
@@ -18,15 +21,45 @@ export function DeportePage(props: DeportePageProps) {
 
   const [horario, setHorario] = useState<number>();
   const [cancha, setCancha] = useState<number>();
+  const [loading, setLoading] = useState(false);
 
+  const token = useAuthStore((s) => s.token);
   function handleReservar() {
-    console.log(cancha, horario);
-    if (cancha === undefined || horario === undefined) return;
+    if (cancha === undefined || horario === undefined) {
+      toast.info("Completa el formulario de reserva");
+      return;
+    }
 
-    console.log(props.canchas[cancha]);
-    console.log(props.horarios[horario]);
-    toast.success("Horario reservado!");
-    window.history.back();
+    const reserva = props.horarios[horario];
+    let horaFinal = 19;
+    try {
+      horaFinal =
+        Number.parseInt(reserva.hora.split(":")[0]) +
+        Number.parseInt(reserva.duracion.split(" ")[0]);
+    } catch (e) {
+      console.log(e);
+    }
+    const reservaHora = `${reserva.hora} - ${horaFinal}:00`;
+
+    setLoading(true);
+    AuthService.postAuthReservar(token, {
+      deporte: props.name,
+      fecha: props.horarios[horario].fecha,
+      hora: reservaHora,
+      local: props.canchas[cancha].name,
+      image: props.image,
+      tipo: "deporte",
+    })
+      .then(() => {
+        toast.success("Horario reservado!");
+        window.history.back();
+      })
+      .catch(() => {
+        toast.error("Ocurrió un error al reservar");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   return (
@@ -89,9 +122,15 @@ export function DeportePage(props: DeportePageProps) {
             </button>
           ))}
         </div>
-        <Button className="mt-4" onClick={handleReservar}>
-          Reservar
-        </Button>
+        <LoadingWrapper isLoading={loading}>
+          <Button
+            className="mt-4 w-full"
+            disabled={loading}
+            onClick={handleReservar}
+          >
+            Reservar
+          </Button>
+        </LoadingWrapper>
       </div>
     </div>
   );

@@ -14,11 +14,13 @@ const datosDeporteMapa = {
       {
         duracion: "1 hr",
         hora: "17:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
       {
         duracion: "1 hr",
         hora: "16:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
     ],
@@ -40,11 +42,13 @@ const datosDeporteMapa = {
       {
         duracion: "1 hr",
         hora: "13:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
       {
         duracion: "1 hr",
         hora: "12:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
     ],
@@ -62,6 +66,7 @@ const datosDeporteMapa = {
       {
         duracion: "1 hr",
         hora: "09:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
     ],
@@ -79,6 +84,7 @@ const datosDeporteMapa = {
       {
         duracion: "1 hr",
         hora: "13:00",
+        fecha: "Martes, 28 may",
         dia: "Hoy",
       },
     ],

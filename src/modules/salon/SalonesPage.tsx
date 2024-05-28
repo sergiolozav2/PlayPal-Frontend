@@ -3,11 +3,14 @@ import { ModuleTitle } from "../core/components/ModulesLayout";
 import React, { useState } from "react";
 import { FaChevronLeft } from "react-icons/fa6";
 import { toast } from "react-toastify";
+import { LoadingWrapper } from "../core/components/LoadingSpinner";
+import { AuthService } from "@/backend";
+import { useAuthStore } from "../core/store/useAuthStore";
 
 type DeportePageProps = {
   image: string;
   name: string;
-  horarios: { hora: string; duracion: string; dia: string }[];
+  horarios: { hora: string; duracion: string; dia: string; fecha: string }[];
 };
 
 export function SalonesPage(props: DeportePageProps) {
@@ -16,14 +19,44 @@ export function SalonesPage(props: DeportePageProps) {
   }
 
   const [horario, setHorario] = useState<number>();
+  const [loading, setLoading] = useState(false);
+  const token = useAuthStore((s) => s.token);
 
   function handleReservar() {
     console.log(horario);
-    if (horario === undefined) return;
+    if (horario === undefined) {
+      toast.info("Completa el formulario de reserva");
+      return;
+    }
 
-    console.log(props.horarios[horario]);
-    toast.success("Salón reservado!");
-    window.history.back();
+    const reserva = props.horarios[horario];
+    let horaFinal = 19;
+    try {
+      horaFinal =
+        Number.parseInt(reserva.hora.split(":")[0]) +
+        Number.parseInt(reserva.duracion.split(" ")[0]);
+    } catch (e) {
+      console.log(e);
+    }
+    const reservaHora = `${reserva.hora} - ${horaFinal}:00`;
+    AuthService.postAuthReservar(token, {
+      deporte: props.name,
+      fecha: props.horarios[horario].fecha,
+      hora: reservaHora,
+      local: props.name,
+      image: props.image,
+      tipo: "salon",
+    })
+      .then(() => {
+        toast.success("Horario reservado!");
+        window.history.back();
+      })
+      .catch(() => {
+        toast.error("Ocurrió un error al reservar");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   return (
@@ -84,9 +117,15 @@ export function SalonesPage(props: DeportePageProps) {
             <p className="px-1 py-2">{props.name}</p>
           </button>
         </div>
-        <Button className="mt-4" onClick={handleReservar}>
-          Reservar
-        </Button>
+        <LoadingWrapper isLoading={loading}>
+          <Button
+            className="mt-4 w-full"
+            disabled={loading}
+            onClick={handleReservar}
+          >
+            Reservar
+          </Button>
+        </LoadingWrapper>
       </div>
     </div>
   );
