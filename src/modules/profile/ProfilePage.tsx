@@ -1,40 +1,65 @@
 import { Button } from "@/components/ui/button";
 import { ModuleTitle } from "../core/components/ModulesLayout";
-import { useEffect, useState } from "react";
 import { LoadingModule } from "../core/components/LoadingModule";
 import { FaCircleUser } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { useAuthStore } from "../core/store/useAuthStore";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AuthService } from "@/backend";
+import { MdClose } from "react-icons/md";
+import { toast } from "react-toastify";
 
-const reservas = [
-  {
-    image: "/images/start/padel.webp",
-    fecha: "Martes, 16 apr",
-    horario: "17:00 - 18:30",
-  },
-];
+type ReservaType = {
+  reservaID: string;
+  image: string;
+  fecha: string;
+  hora: string;
+  local: string;
+  deporte: string;
+  tipo: string;
+};
+
+function useReservas() {
+  const token = useAuthStore((s) => s.token);
+  const query = useQuery({
+    queryFn: () => AuthService.getAuthReservas(token),
+    queryKey: ["reservas", token],
+  });
+  return query;
+}
 export function ProfilePage() {
-  const [loading, setLoading] = useState(true);
   const usuario = useAuthStore((s) => s.user);
 
   const logout = useAuthStore((s) => s.setLoggedOut);
-  useEffect(() => {
-    const time = setTimeout(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      setLoading(false);
-    }, 0);
-    return () => {
-      clearTimeout(time);
-    };
-  }, []);
+
+  const { data, isLoading } = useReservas();
+
+  const reservas = data as ReservaType[];
+  const queryClient = useQueryClient();
+
+  const token = useAuthStore((s) => s.token);
+
+  function eliminarReserva(reservaID: string) {
+    AuthService.deleteAuthReservas(token, { reservaID })
+      .then(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["reservas"],
+        });
+        toast.success("Reserva eliminada!");
+      })
+      .catch((e) => {
+        toast.error("Ocurrió un error al eliminar");
+        console.log(e);
+      });
+  }
   return (
     <div className="flex w-full max-w-[100vw] flex-col">
       <ModuleTitle>
         <div className="flex items-center">Menu</div>
       </ModuleTitle>
       <div className="fade-in-animation flex flex-col gap-5 px-7 pb-20 pt-6">
-        {loading && <LoadingModule />}
-        {!loading && (
+        {isLoading && <LoadingModule />}
+        {!isLoading && (
           <div className="flex items-center rounded-md bg-muted px-3 py-4 text-foreground/80">
             <FaCircleUser className="mr-3 text-5xl" />
             <div className="flex flex-col gap-0.5">
@@ -43,38 +68,59 @@ export function ProfilePage() {
             </div>
           </div>
         )}
-        <p className="text-sm font-medium">Tus reservas</p>
-        <div className="mt-2 flex">
-          {reservas.map((reserva, index) => (
-            <div key={index} className="flex items-center">
-              <div className="mr-4 h-14 w-14 rounded-lg bg-primary_2 p-2">
-                <img className="w-full" src={reserva.image} />
-              </div>
-              <div className="flex flex-col text-xs">
-                <p className="mb-0.5">
-                  {reserva.fecha} | {reserva.horario}
-                </p>
-                <div className="flex gap-2 text-xs">
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-md bg-muted p-2">PG</div>
-                    <p>Pedro</p>
+        <div className="flex flex-col">
+          <p className="text-sm font-medium">Tus reservas</p>
+          <div className="mt-2 flex flex-col gap-6">
+            {isLoading && <LoadingModule />}
+            {reservas &&
+              reservas.map((reserva, index) => (
+                <div key={index} className="relative flex items-center">
+                  <button
+                    className="absolute right-0 top-0 p-0.5"
+                    onClick={() => eliminarReserva(reserva.reservaID)}
+                  >
+                    <MdClose className="text-destructive" />
+                  </button>
+                  <div className="mr-4 h-14 w-14 rounded-lg bg-primary_2 p-2">
+                    <img
+                      className="h-full w-full object-contain"
+                      src={reserva.image}
+                    />
                   </div>
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-md bg-muted p-2">AV</div>
-                    <p>Andrea</p>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-md bg-muted p-2">MM</div>
-                    <p>Mateo</p>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-md bg-muted p-2">RF</div>
-                    <p>Ramiro</p>
+                  <div className="flex flex-col text-xs">
+                    <p className="mb-0.5">
+                      {reserva.fecha} | {reserva.hora}
+                    </p>
+                    {reserva.tipo === "deporte" && (
+                      <div className="flex gap-2 text-xs">
+                        <div className="flex flex-col items-center">
+                          <div className="rounded-md bg-muted p-2">PG</div>
+                          <p>Pedro</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="rounded-md bg-muted p-2">AV</div>
+                          <p>Andrea</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="rounded-md bg-muted p-2">MM</div>
+                          <p>Mateo</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="rounded-md bg-muted p-2">RF</div>
+                          <p>Ramiro</p>
+                        </div>
+                      </div>
+                    )}
+                    {reserva.tipo !== "deporte" && <p>{reserva.local}</p>}
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))}
+            {reservas && reservas?.length === 0 && (
+              <p className="text-smd text-muted-foreground">
+                No tienes ninguna reserva
+              </p>
+            )}
+          </div>
         </div>
         <Button className="items-center justify-start bg-primary_2 text-left font-semibold">
           <div className="mr-3 w-8">
