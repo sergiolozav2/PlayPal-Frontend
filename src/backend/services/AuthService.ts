@@ -53,4 +53,71 @@ export class AuthService {
             body: body,
         });
     }
+    /**
+     * @param authorization
+     * @returns any Default Response
+     * @throws ApiError
+     */
+    public static getAuthReservas(
+        authorization: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/auth/reservas',
+            headers: {
+                'authorization': authorization,
+            },
+        });
+    }
+    /**
+     * @param authorization
+     * @param body
+     * @returns any Default Response
+     * @throws ApiError
+     */
+    public static deleteAuthReservas(
+        authorization: string,
+        body?: {
+            reservaID: string;
+        },
+    ): CancelablePromise<{
+        result: boolean;
+    }> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/auth/reservas',
+            headers: {
+                'authorization': authorization,
+            },
+            body: body,
+        });
+    }
+    /**
+     * @param authorization
+     * @param body
+     * @returns any Default Response
+     * @throws ApiError
+     */
+    public static postAuthReservar(
+        authorization: string,
+        body?: {
+            fecha: string;
+            hora: string;
+            deporte: string;
+            local: string;
+            image: string;
+            tipo: string;
+        },
+    ): CancelablePromise<{
+        result: boolean;
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/auth/reservar',
+            headers: {
+                'authorization': authorization,
+            },
+            body: body,
+        });
+    }
 }
